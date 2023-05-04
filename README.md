@@ -1,0 +1,2 @@
+# Android-Multicast-Transceiver
+UDPマルチキャストを利用したリアルタイム音声通信が可能なシンプルなAndroidトランシーバーアプリ。複数のAndroidデバイス間での通信に対応。
