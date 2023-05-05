@@ -54,10 +54,28 @@ class MainActivity : AppCompatActivity() {
         messageTextView = findViewById(R.id.messageTextView)
     }
 
+    // キーが押されたときのイベント処理
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        Log.d("KeyCode", "Key pressed: $keyCode")
-        // ここで、適切なキーコードに基づいて処理を行います。
+        when (keyCode) {
+            79 -> { // PTTボタンが押されたときの処理
+                messageTextView.text = "PTT"
+                return true // イベントを処理済みとして返す
+            }
+        }
+        // 他のキーコードはデフォルトの処理を実行
         return super.onKeyDown(keyCode, event)
+    }
+
+    // キーが離されたときのイベント処理
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        when (keyCode) {
+            79 -> { // PTTボタンが離されたときの処理
+                messageTextView.text = "..."
+                return true // イベントを処理済みとして返す
+            }
+        }
+        // 他のキーコードはデフォルトの処理を実行
+        return super.onKeyUp(keyCode, event)
     }
 
     // パーミッション要求の結果を処理するメソッド
