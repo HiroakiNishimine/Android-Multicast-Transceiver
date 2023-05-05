@@ -51,15 +51,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     // パーミッション要求の結果を処理するメソッド
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    // ユーザーがパーミッションを許可または拒否すると、OSに呼び出され、その結果を処理するメソッド
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // ユーザーがRECORD_AUDIOパーミッションを許可した場合、送受信処理を開始
-            setupAudioTransceiver()
-            } else {
-                // ユーザーがRECORD_AUDIOパーミッションを拒否した場合、アプリを終了
-                finish()
+        when (requestCode) {
+            1 -> {
+                // ユーザーがRECORD_AUDIOパーミッションを許可した場合、送受信処理を開始
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    setupAudioTransceiver()
+                } else {
+                    // ユーザーがパーミッションを拒否した場合、アプリを終了
+                    finish()
+                }
+                return
+            }
+            // 他のパーミッション要求に対しても適切に対処することができます。
+            else -> {
+                // 無視する
             }
         }
     }
@@ -97,7 +105,13 @@ class MainActivity : AppCompatActivity() {
             try {
                 // 音声録音用のAudioRecordオブジェクトを作成
                 val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioEncoding)
-                val audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioEncoding, bufferSize)
+                val audioRecord: AudioRecord
+                try {
+                    audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioEncoding, bufferSize)
+                } catch (e: SecurityException) {
+                    Log.e("TransceiverApp", "Permission for microphone was not granted.", e)
+                    return@Thread
+                }
 
                 // 音声録音を開始
                 audioRecord.startRecording()
