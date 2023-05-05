@@ -1,5 +1,4 @@
 // UDPマルチキャストを利用した「オーディオを送受信する」トランシーバーアプリ
-// UDPマルチキャストを利用した「オーディオを送受信する」トランシーバーアプリ
 // このコードは簡単な例であり、実際のアプリケーションではエラー処理、例外処理、リソースの開放、バックグラウンド処理、音声圧縮などの改善が必要になるでしょう。
 // また、マルチキャスト通信に関連するパーミッション（INTERNETとACCESS_NETWORK_STATE）および音声録音と再生に関連するパーミッション（RECORD_AUDIOとMODIFY_AUDIO_SETTINGS）がAndroidマニフェストファイルに追加されていることを確認してください。
 
@@ -22,7 +21,9 @@ import android.media.MediaRecorder
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.view.KeyEvent
 import android.view.MotionEvent
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
     private val multicastGroupAddress = "224.0.0.1" // マルチキャストグループのアドレス
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO // チャンネル設定
     private val audioEncoding = AudioFormat.ENCODING_PCM_16BIT // オーディオエンコーディング
     private var isRecording = false                 // 録音中かどうかを示すフラグ
+    private lateinit var messageTextView: TextView  // 画面上のメッセージテキストビュー
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,10 +50,18 @@ class MainActivity : AppCompatActivity() {
         // すべてのスレッドポリシーを許可する設定
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
+
+        messageTextView = findViewById(R.id.messageTextView)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        Log.d("KeyCode", "Key pressed: $keyCode")
+        // ここで、適切なキーコードに基づいて処理を行います。
+        return super.onKeyDown(keyCode, event)
     }
 
     // パーミッション要求の結果を処理するメソッド
-    // ユーザーがパーミッションを許可または拒否すると、OSに呼び出され、その結果を処理するメソッド
+    // ユーザーがパーミッションを許可または拒否すると、OSに呼び出され、その結果を処理する
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -74,7 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     // 送信ボタンが長押しされたときに録音を開始し、ボタンがクリックされたときに録音を停止するように設定するメソッド（最後に受信処理を開始する）
     private fun setupAudioTransceiver() {
-        // 送信ボタンを押したときの処理を設定する
+        // 送信ボタンを取得する
         val sendButton: Button = findViewById(R.id.send_button)
 
         // 送信ボタンが長押しされた場合の処理
@@ -89,6 +99,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        // 送信ボタンが押された場合の処理
         sendButton.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -117,7 +128,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
 
         // 受信処理を開始する
         startReceivingAudio()
