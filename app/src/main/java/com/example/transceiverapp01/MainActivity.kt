@@ -116,6 +116,7 @@ class MainActivity : AppCompatActivity() {
                 // 音声録音を開始
                 audioRecord.startRecording()
 
+
                 // 録音中の音声データを格納するバッファを作成（1024バイト）
                 val buffer = ByteArray(1024)
 
