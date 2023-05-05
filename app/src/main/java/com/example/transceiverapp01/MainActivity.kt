@@ -58,6 +58,12 @@ class MainActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
             79 -> { // PTTボタンが押されたときの処理
+                // 録音中フラグを真に設定
+                isRecording = true
+                // 録音を開始する
+                startRecording()
+                // 録音開始のログを出力
+                Log.i("TransceiverApp", "Started Recording")
                 messageTextView.text = "PTT"
                 return true // イベントを処理済みとして返す
             }
@@ -70,6 +76,10 @@ class MainActivity : AppCompatActivity() {
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
             79 -> { // PTTボタンが離されたときの処理
+                // 録音中フラグを偽に設定
+                isRecording = false
+                // 録音停止のログを出力
+                Log.i("TransceiverApp", "Stopped Recording")
                 messageTextView.text = "..."
                 return true // イベントを処理済みとして返す
             }
@@ -100,57 +110,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 送信ボタンが長押しされたときに録音を開始し、ボタンがクリックされたときに録音を停止するように設定するメソッド（最後に受信処理を開始する）
+    // 音声データの送受信処理を開始するメソッド
     private fun setupAudioTransceiver() {
-        // 送信ボタンを取得する
-        val sendButton: Button = findViewById(R.id.send_button)
-
-        // 送信ボタンが長押しされた場合の処理
-        sendButton.setOnLongClickListener {
-            // 録音中フラグを真に設定
-            isRecording = true
-            // 録音を開始する
-            startRecording()
-            // 録音開始のログを出力
-            Log.i("TransceiverApp", "Started Recording")
-            // イベントが処理されたことを示すため、trueを返す
-            true
-        }
-
-        // 送信ボタンが押された場合の処理
-        sendButton.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    // 録音中フラグを真に設定
-                    isRecording = true
-                    // 録音を開始する
-                    startRecording()
-                    // 録音開始のログを出力
-                    Log.i("TransceiverApp", "Started Recording")
-                    // イベントが処理されたことを示すため、trueを返す
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    // 録音中の場合
-                    if (isRecording) {
-                        // 録音中フラグを偽に設定
-                        isRecording = false
-                        // 録音停止のログを出力
-                        Log.i("TransceiverApp", "Stopped Recording")
-                    }
-                    // イベントが処理されたことを示すため、trueを返す
-                    true
-                }
-                else -> {
-                    false
-                }
-            }
-        }
-
-        // 受信処理を開始する
         startReceivingAudio()
     }
-
 
     // 音声を録音して送信するメソッド
     private fun startRecording() {
@@ -212,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 multicastSocket.close()
 
             } catch (e: Exception) {
-                Log.i("TransceiverApp", "Exception Occurred! In Sending Data")
+                Log.e("TransceiverApp", "Exception Occurred! In Sending Data")
                 // 例外が発生した場合、スタックトレースを出力する
                 e.printStackTrace()
             }
@@ -262,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                     audioTrack.write(datagramPacket.data, 0, datagramPacket.length)
                 }
             } catch (e: Exception) {
-                Log.i("TransceiverApp", "Exception Occurred! In Receiving Data")
+                Log.e("TransceiverApp", "Exception Occurred! In Receiving Data")
                 // 例外が発生した場合、スタックトレースを出力する
                 e.printStackTrace()
             }
