@@ -22,6 +22,7 @@ import android.media.MediaRecorder
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
+import android.view.MotionEvent
 
 class MainActivity : AppCompatActivity() {
     private val multicastGroupAddress = "224.0.0.1" // マルチキャストグループのアドレス
@@ -88,16 +89,35 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // 送信ボタンがクリックされた場合の処理
-        sendButton.setOnClickListener {
-            // 録音中の場合
-            if (isRecording) {
-                // 録音中フラグを偽に設定
-                isRecording = false
-                // 録音停止のログを出力
-                Log.i("TransceiverApp", "Stopped Recording")
+        sendButton.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    // 録音中フラグを真に設定
+                    isRecording = true
+                    // 録音を開始する
+                    startRecording()
+                    // 録音開始のログを出力
+                    Log.i("TransceiverApp", "Started Recording")
+                    // イベントが処理されたことを示すため、trueを返す
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    // 録音中の場合
+                    if (isRecording) {
+                        // 録音中フラグを偽に設定
+                        isRecording = false
+                        // 録音停止のログを出力
+                        Log.i("TransceiverApp", "Stopped Recording")
+                    }
+                    // イベントが処理されたことを示すため、trueを返す
+                    true
+                }
+                else -> {
+                    false
+                }
             }
         }
+
 
         // 受信処理を開始する
         startReceivingAudio()
