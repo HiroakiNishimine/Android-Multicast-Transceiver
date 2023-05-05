@@ -19,7 +19,6 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
-import android.view.MotionEvent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
@@ -72,31 +71,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 送信ボタンが長押しされたときに録音を開始し、ボタンがクリックされたときに録音を停止するように設定するメソッド（最後に受信処理を開始する）
     private fun setupAudioTransceiver() {
-        // 送信ボタンを押したときの処理
+        // 送信ボタンを押したときの処理を設定する
         val sendButton: Button = findViewById(R.id.send_button)
-        sendButton.setOnTouchListener { _, event ->
-            when (event.action) {
-                // 送信ボタンが押されたときに録音を開始
-                MotionEvent.ACTION_DOWN -> {
-                    isRecording = true
-                    startRecording()
-                    Log.i("TransceiverApp", "Started Recording")
-                    true
-                }
-                // 送信ボタンが離されたときに録音を停止
-                MotionEvent.ACTION_UP -> {
-                    isRecording = false
-                    Log.i("TransceiverApp", "Stopped Recording")
-                    true
-                }
-                else -> false
+
+        // 送信ボタンが長押しされた場合の処理
+        sendButton.setOnLongClickListener {
+            // 録音中フラグを真に設定
+            isRecording = true
+            // 録音を開始する
+            startRecording()
+            // 録音開始のログを出力
+            Log.i("TransceiverApp", "Started Recording")
+            // イベントが処理されたことを示すため、trueを返す
+            true
+        }
+
+        // 送信ボタンがクリックされた場合の処理
+        sendButton.setOnClickListener {
+            // 録音中の場合
+            if (isRecording) {
+                // 録音中フラグを偽に設定
+                isRecording = false
+                // 録音停止のログを出力
+                Log.i("TransceiverApp", "Stopped Recording")
             }
         }
 
-        // 受信処理を開始
+        // 受信処理を開始する
         startReceivingAudio()
     }
+
 
     // 音声を録音して送信するメソッド
     private fun startRecording() {
@@ -112,14 +118,10 @@ class MainActivity : AppCompatActivity() {
                     Log.e("TransceiverApp", "Permission for microphone was not granted.", e)
                     return@Thread
                 }
-
                 // 音声録音を開始
                 audioRecord.startRecording()
-
-
                 // 録音中の音声データを格納するバッファを作成（1024バイト）
                 val buffer = ByteArray(1024)
-
                 // isRecordingフラグがtrueの間、音声を録音し続ける
                 while (isRecording) {
                     // 音声データを読み取る
